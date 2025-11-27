@@ -125,7 +125,7 @@ export default function App() {
             secureTextEntry
           />
           <TouchableOpacity style={styles.button} onPress={validarLogin}>
-            <Text style={styles.btnText}>Entrar</Text>
+            <Text style={styles.btnText}>Entrar :D </Text>
           </TouchableOpacity>
         </View>
       ) : (
