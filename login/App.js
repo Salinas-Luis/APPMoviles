@@ -57,21 +57,17 @@ export default function App() {
     if (cameraRef.current) {
       const result = await cameraRef.current.takePictureAsync();
       setPhotoUri(result.uri); 
-      // IMPORTANTE: NO desactivamos la cámara aquí. 
-      // Dejamos que el bloque de renderizado muestre la previsualización de la foto.
+
     }
   };
 
-  // --- LÓGICA DE CÁMARA A PANTALLA COMPLETA ---
   if (isCameraActive) {
-    // CORRECCIÓN 1: El texto debe ir dentro de <Text>
     if (!permission) return (
       <View style={styles.container}>
         <Text>Cargando permisos...</Text>
       </View>
     );
     
-    // CORRECCIÓN 2: El texto debe ir dentro de <Text>
     if (!permission.granted) {
       return (
         <View style={styles.container}>
@@ -84,17 +80,13 @@ export default function App() {
     return (
         <View style={StyleSheet.absoluteFill}>
             {!photoUri ? (
-                // --- VISTA DE CÁMARA ACTIVA ---
                 <View style={StyleSheet.absoluteFill}>
-                    {/* CORRECCIÓN 3: CameraView NO debe tener hijos. 
-                       Ahora es un hermano de los botones. */}
                     <CameraView 
                         ref={cameraRef} 
                         style={StyleSheet.absoluteFill} 
                         facing='back' 
                     />
                     
-                    {/* Contenedor de botones (posición absoluta sobre la cámara) */}
                     <View style={styles.cameraButtonContainer}>
                         <Button title="Tomar foto" onPress={takePhoto} />
                         <Button title="Cancelar" onPress={() => setIsCameraActive(false)} color="red" />
@@ -102,12 +94,10 @@ export default function App() {
                 </View>
                 
             ) : (
-                // --- VISTA DE PREVISUALIZACIÓN DE FOTO ---
                 <View style={styles.imagePreviewContainer}>
                     <Image source={{ uri: photoUri }} style={styles.fullScreenImage} />
                     <View style={styles.cameraButtonContainer}>
                          <Button title="Tomar otra" onPress={() => setPhotoUri(null)} />
-                         {/* Cuando el usuario presione "Usar Foto", guarda el URI y vuelve a la vista principal */}
                          <Button title="Usar Foto" onPress={() => {setImageUri(photoUri); setPhotoUri(null); setIsCameraActive(false);}} />
                     </View>
                 </View>
@@ -116,11 +106,9 @@ export default function App() {
     );
   }
   
-  // --- VISTA PRINCIPAL (LOGIN O BIENVENIDA) ---
   return (
     <SafeAreaView style={styles.container}>
       {!loggedIn ? (
-        // Vista de Login
         <View style={styles.box}>
           <Text style={styles.title}>Iniciar Sesión</Text>
           <TextInput
@@ -141,7 +129,6 @@ export default function App() {
           </TouchableOpacity>
         </View>
       ) : (
-        // Vista Principal (después del Login)
         <View style={styles.box}>
           <Text style={styles.title}>Bienvenido {user}</Text>
           <TouchableOpacity onPress={abrirCamara}>
@@ -202,7 +189,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 10,
   },
-  // --- Estilos de Cámara Nuevos ---
   cameraButtonContainer: {
     position: 'absolute',
     bottom: 20,
@@ -222,5 +208,4 @@ const styles = StyleSheet.create({
     height: '100%',
     resizeMode: 'contain',
   }
-  // ---------------------------------
 });
