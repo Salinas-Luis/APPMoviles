@@ -1,29 +1,23 @@
 import React, { useState, useRef } from 'react';
 import { SafeAreaView, View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, Button } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { CameraView, useCameraPermissions } from 'expo-camera'; 
 
 export default function App() {
-  // Estados originales del login
   const [user, setUser] = useState('');
   const [pass, setPass] = useState('');
   const [imageUri, setImageUri] = useState(null); 
   const [loggedIn, setLoggedIn] = useState(false);
   
-  // Estado para controlar el escaneo de QR en tiempo real
   const [isScanningQR, setIsScanningQR] = useState(false);
   const [scannedData, setScannedData] = useState(null);
 
   const cameraRef = useRef(null);
   const [permission, requestPermission] = useCameraPermissions();
-
-  // Función genérica para mostrar el resultado del escaneo
   const showScanResult = (data) => {
     Alert.alert(
       'Código QR Escaneado',
       `Datos: ${data}`,
       [
-        // Al presionar OK, limpiamos los datos y volvemos a la vista principal
         { text: 'OK', onPress: () => { setScannedData(null); setIsScanningQR(false); } }
       ]
     );
@@ -40,45 +34,6 @@ export default function App() {
     }
   };
 
-  // Función para escanear desde la galería (Decodificación de imagen estática)
-  const escanearDesdeGaleria = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permiso denegado', 'Se necesita acceso a las imágenes de la galería');
-      return;
-    }
-    
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 0.8,
-    });
-    
-    if (!result.canceled) {
-      const selectedUri = result.assets[0].uri;
-      setImageUri(selectedUri); // Mostrar la imagen seleccionada
-
-      // ----------------------------------------------------------------------------------
-      // NOTA IMPORTANTE:
-      // La decodificación de QR desde una imagen estática (URI) requiere una librería
-      // dedicada (ej. 'expo-barcode-scanner' con una función de decodificación estática,
-      // o una librería de terceros) que pueda leer el QR desde la imagen.
-      // ----------------------------------------------------------------------------------
-      
-      // Simulamos un resultado ya que no podemos decodificar el QR de la imagen estática aquí:
-      if (selectedUri) {
-          const simulatedData = `QR_simulado_desde_galeria_${Date.now()}`;
-          setScannedData(simulatedData);
-          Alert.alert(
-              'Imagen Seleccionada para Escaneo',
-              `La imagen ha sido cargada. En una aplicación real, el código QR contenido en la imagen se decodificaría aquí.\nResultado Simulado: ${simulatedData}`,
-              [{ text: 'OK', onPress: () => setScannedData(null) }]
-          );
-      }
-    }
-  };
-
-  // Función para iniciar el escaneo de QR en tiempo real con la cámara
   const iniciarEscaneoQR_TiempoReal = async () => {
     if (!permission) {
       Alert.alert('Cargando', 'Esperando permisos de la cámara...');
@@ -93,20 +48,17 @@ export default function App() {
       }
     }
     
-    // Limpiar datos escaneados anteriores y activar el escaneo
     setScannedData(null); 
     setIsScanningQR(true);
   };
   
-  // Función que se llama cuando se detecta un código QR en tiempo real
   const handleBarCodeScanned = ({ data }) => {
-    if (!scannedData) { // Asegura que solo se procese una vez
+    if (!scannedData) { 
         setScannedData(data);
         showScanResult(data);
     }
   };
 
-  // --- Lógica de la vista de escaneo QR en tiempo real ---
   if (isScanningQR) {
     if (!permission || !permission.granted) {
       return (
@@ -122,10 +74,9 @@ export default function App() {
     return (
       <View style={StyleSheet.absoluteFill}>
         <CameraView 
-          // Solo escanear si no se ha escaneado un dato todavía
           onBarcodeScanned={scannedData ? undefined : handleBarCodeScanned} 
           barcodeScannerSettings={{
-            barcodeTypes: ['qr'] // Configurado para solo QR
+            barcodeTypes: ['qr'] 
           }}
           style={StyleSheet.absoluteFill} 
           facing='back' 
@@ -143,7 +94,6 @@ export default function App() {
     );
   }
   
-  // --- Lógica de la vista de Login y Principal (Home) ---
   return (
     <SafeAreaView style={styles.container}>
       {!loggedIn ? (
@@ -175,18 +125,10 @@ export default function App() {
           />
           
           <Button 
-            title="1. Escanear QR desde Cámara (Tiempo Real)" 
+            title="Escanear Código QR" 
             onPress={iniciarEscaneoQR_TiempoReal} 
             color="#28a745" 
           /> 
-          
-          <View style={{ marginTop: 10, width: '100%' }}>
-            <Button 
-              title="2. Escanear QR desde Galería (Foto)" 
-              onPress={escanearDesdeGaleria} 
-              color="#007bff"
-            />
-          </View>
           
           <View style={{ marginTop: 20 }}>
              <Button title="Cerrar Sesión" onPress={() => setLoggedIn(false)} color="#6c757d" />
@@ -274,7 +216,6 @@ const styles = StyleSheet.create({
       color: '#495057',
       width: '100%',
   },
-  // Estilos específicos para la vista de escaneo QR
   cameraButtonContainer: {
     position: 'absolute',
     bottom: 50,
