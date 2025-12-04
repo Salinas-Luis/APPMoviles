@@ -1,5 +1,16 @@
 import React, { useState, useRef } from 'react';
-import { SafeAreaView, View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, Button } from 'react-native';
+import { 
+  SafeAreaView, 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  Image, 
+  StyleSheet, 
+  Alert, 
+  Button, 
+  Linking
+} from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera'; 
 
 export default function App() {
@@ -13,14 +24,24 @@ export default function App() {
 
   const cameraRef = useRef(null);
   const [permission, requestPermission] = useCameraPermissions();
-  const showScanResult = (data) => {
-    Alert.alert(
-      'Código QR Escaneado',
-      `Datos: ${data}`,
-      [
-        { text: 'OK', onPress: () => { setScannedData(null); setIsScanningQR(false); } }
-      ]
-    );
+  
+  const handleScanResult = async (data) => {
+    setScannedData(data);
+    setIsScanningQR(false);
+
+    try {
+      await Linking.openURL(data);
+      Alert.alert(
+        'Enlace Abierto', 
+        `Se intentó abrir: ${data}`
+      );
+    } catch (error) {
+      Alert.alert(
+        'Datos Escaneados', 
+        `No se pudo abrir como enlace, mostrando datos: ${data}`,
+        [{ text: 'OK' }]
+      );
+    }
   };
 
   const validarLogin = () => {
@@ -54,8 +75,7 @@ export default function App() {
   
   const handleBarCodeScanned = ({ data }) => {
     if (!scannedData) { 
-        setScannedData(data);
-        showScanResult(data);
+        handleScanResult(data);
     }
   };
 
@@ -131,11 +151,11 @@ export default function App() {
           /> 
           
           <View style={{ marginTop: 20 }}>
-             <Button title="Cerrar Sesión" onPress={() => setLoggedIn(false)} color="#6c757d" />
+              <Button title="Cerrar Sesión" onPress={() => setLoggedIn(false)} color="#6c757d" />
           </View>
           
           {scannedData && (
-             <Text style={styles.dataDisplay}>Último dato QR escaneado: {scannedData}</Text>
+              <Text style={styles.dataDisplay}>Último dato QR escaneado: {scannedData}</Text>
           )}
         </View>
       )}
